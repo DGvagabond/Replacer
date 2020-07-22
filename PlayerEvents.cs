@@ -1,40 +1,35 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using Exiled.Permissions.Extensions;
-using System.Linq;
+using Exiled.Events.Handlers;
 using MEC;
-using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace Replacer
 {
     public class PlayerEvents
     {
         public Plugin plugin;
-        Exiled.API.Features.Player ply;
-
-        public void Awake()
-        {
-            ReferenceHub gameObject = null;
-            ply = Player.Get(gameObject);
-        }
         public PlayerEvents(Plugin plugin) => this.plugin = plugin;
     
             public void OnPlayerLeave(LeftEventArgs ev)
         {
-            if (this.ply.Team != Team.RIP)
+            if (ev.Player.Role.GetTeam() != Team.RIP)
             {
-                Inventory.SyncListItemInfo items = this.ply.Inventory.items;
-                RoleType role = this.ply.Role;
-                Vector3 pos = this.ply.Position;
-                float health = this.ply.Health;
+                Inventory.SyncListItemInfo items = ev.Player.Inventory.items;
+                RoleType role = ev.Player.Role;
+                Vector3 pos = ev.Player.Position;
+                float health = ev.Player.Health;
                 Dictionary<Exiled.API.Enums.AmmoType, uint> ammo = new Dictionary<Exiled.API.Enums.AmmoType, uint>();
                 foreach (Exiled.API.Enums.AmmoType atype in (Exiled.API.Enums.AmmoType[])Enum.GetValues(typeof(Exiled.API.Enums.AmmoType)))
                 {
-                    ammo.Add(atype, this.ply.GetAmmo(atype));
+                    ammo.Add(atype, ev.Player.GetAmmo(atype));
                 }
-                Player player = Player.List.FirstOrDefault(x => x.Role == RoleType.Spectator && x.UserId != string.Empty && !x.IsOverwatchEnabled && x != this.ply);
+                Exiled.API.Features.Player player = Exiled.API.Features.Player.List.FirstOrDefault(x => x.Role == RoleType.Spectator && x.UserId != string.Empty && !x.IsOverwatchEnabled && x != ev.Player);
                 if (player != null)
                     player.SetRole(role);
                 Timing.CallDelayed(0.3f, () =>
@@ -49,11 +44,12 @@ namespace Replacer
                         uint amount;
                         if (ammo.TryGetValue(atype, out amount))
                         {
-                            this.ply.SetAmmo(atype, amount);
+                            player.SetAmmo(atype, amount);
                         }
                         else
-                            Log.Error($"[Replacer] ERROR: Tried to get a value from dict that did not exist! (Ammo)");
+                            Log.Error($"[uAFK] ERROR: Tried to get a value from dict that did not exist! (Ammo)");
                     }
+                    player.Broadcast(10, $"You have replaced {ev.Player}, good luck!");
                 });
             }
         }
