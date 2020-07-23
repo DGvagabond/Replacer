@@ -20,6 +20,10 @@ namespace Replacer
         {
             if (ev.Player.Role.GetTeam() != Team.RIP)
             {
+                bool scp079 = false;
+                if (ev.Player.Role == RoleType.Scp079)
+                    scp079 = true;
+
                 Inventory.SyncListItemInfo items = ev.Player.Inventory.items;
                 RoleType role = ev.Player.Role;
                 Vector3 pos = ev.Player.Position;
@@ -29,6 +33,16 @@ namespace Replacer
                 {
                     ammo.Add(atype, ev.Player.GetAmmo(atype));
                 }
+
+                byte lvl079 = 0;
+                float xp079 = 0f, ap079 = 0f;
+                if (scp079)
+                {
+                    lvl079 = ev.Player.Level;
+                    xp079 = ev.Player.Experience;
+                    ap079 = ev.Player.Energy;
+                }
+
                 Exiled.API.Features.Player player = Exiled.API.Features.Player.List.FirstOrDefault(x => x.Role == RoleType.Spectator && x.UserId != string.Empty && !x.IsOverwatchEnabled && x != ev.Player);
                 if (player != null)
                     player.SetRole(role);
@@ -49,7 +63,14 @@ namespace Replacer
                         else
                             Log.Error($"[uAFK] ERROR: Tried to get a value from dict that did not exist! (Ammo)");
                     }
-                    player.Broadcast(10, $"You have replaced {ev.Player}, good luck!");
+
+                    if (scp079)
+                    {
+                        player.Level = lvl079;
+                        player.Experience = xp079;
+                        player.Energy = ap079;
+                    }
+                    player.Broadcast(10, $"You have replaced {ev.Player.Nickname}!");
                 });
             }
         }
