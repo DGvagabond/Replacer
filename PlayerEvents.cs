@@ -61,7 +61,7 @@ namespace Replacer
                             player.SetAmmo(atype, amount);
                         }
                         else
-                            Log.Error($"[uAFK] ERROR: Tried to get a value from dict that did not exist! (Ammo)");
+                            Log.Error($"ERROR: Tried to get a value from dict that did not exist: (Ammo)");
                     }
 
                     if (scp079)
