@@ -15,7 +15,7 @@ namespace Replacer
     {
         public override string Author { get; } = "DGvagabond";
         public override string Name { get; } = "Replacer";
-        public override Version Version { get; } = new Version(1, 0, 1);
+        public override Version Version { get; } = new Version(1, 1, 0);
         public override Version RequiredExiledVersion { get; } = new Version(2, 0, 6);
 
         public PlayerEvents PlayerEvents;
@@ -30,7 +30,7 @@ namespace Replacer
                 Handlers.Player.Kicking += PlayerEvents.OnPlayerKicking;
                 Handlers.Player.Banning += PlayerEvents.OnPlayerBanning;
 
-                Log.Info($"Plugin loaded.");
+                Log.Info($"v{Version}, made by {Author}, successfully loaded.");
             }
 
             catch (Exception e)
