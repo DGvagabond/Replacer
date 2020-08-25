@@ -1,36 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
-using Exiled.API.Interfaces;
-using Exiled.Events;
-using Handlers = Exiled.Events.Handlers;
+using Exiled.API.Enums;
+using Player = Exiled.Events.Handlers.Player;
+using Server = Exiled.Events.Handlers.Server;
+using Exiled.Events.Handlers;
 
 namespace Replacer
 {
-    using Exiled.API.Enums;
-    using Exiled.API.Features;
-    public class Plugin : Exiled.API.Features.Plugin<Config>
+    public class Plugin : Plugin<Config>
     {
         public override string Author { get; } = "DGvagabond";
         public override string Name { get; } = "Replacer";
-        public override Version Version { get; } = new Version(1, 1, 0);
-        public override Version RequiredExiledVersion { get; } = new Version(2, 0, 6);
+        public override Version Version { get; } = new Version(1, 1, 1);
+        public override Version RequiredExiledVersion { get; } = new Version(2, 1, 1);
 
-        public PlayerEvents PlayerEvents;
+        private Handlers.Player PlayerEvents;
         public static Plugin Singleton;
         public override void OnEnabled()
         {
             try
             {
-                Singleton = this;
-                PlayerEvents = new PlayerEvents(this);
-
-                Handlers.Player.Kicking += PlayerEvents.OnPlayerKicking;
-                Handlers.Player.Banning += PlayerEvents.OnPlayerBanning;
-
-                Log.Info($"v{Version}, made by {Author}, successfully loaded.");
+                base.OnEnabled();
+                LoadEvents();
             }
 
             catch (Exception e)
@@ -42,8 +33,21 @@ namespace Replacer
 
         public override void OnDisabled()
         {
-            Handlers.Player.Kicking -= PlayerEvents.OnPlayerKicking;
-            Handlers.Player.Banning -= PlayerEvents.OnPlayerBanning;
+            base.OnDisabled();
+            UnloadEvents();
+        }
+
+        private void LoadEvents()
+        {
+            Singleton = this;
+            PlayerEvents = new Handlers.Player(this);
+
+            Player.Left += PlayerEvents.OnLeave;
+        }
+
+        private void UnloadEvents()
+        {
+            Player.Left -= PlayerEvents.OnLeave;
 
             PlayerEvents = null;
         }
